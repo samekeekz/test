@@ -6,6 +6,7 @@ import { useDisclosure } from "@mantine/hooks";
 
 function App() {
   const [groups, setGroups] = useState<GroupType[] | undefined>();
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentUsers, setCurrentUsers] = useState<User[] | undefined>();
   const [opened, { open, close }] = useDisclosure(false);
@@ -20,11 +21,18 @@ function App() {
       try {
         setLoading(true);
         const response: GetGroupsResponse = await fetchGroups();
-        console.log(response);
         if (response.result === 1) {
-          setGroups(response.data);
+          if (response.data) {
+            setGroups(response.data);
+          } else {
+            console.error(
+              "Failed to fetch groups: No data attribute in response"
+            );
+            setError("Some errors occurred");
+          }
         } else {
           console.error("Failed to fetch groups");
+          setError("Some errors occurred");
         }
       } catch (error) {
         console.error("Error fetching groups:", error);
@@ -55,6 +63,14 @@ function App() {
   };
 
   const filteredGroups = groups?.filter((group) => applyFilters(group));
+
+  if (error.length > 0)
+    return (
+      <>
+        <h1 className="mt-40 text-3xl font-bold text-center">{error}</h1>
+        <p className="text-center text-xl">Please try again later</p>
+      </>
+    );
 
   return (
     <div className="grid justify-center pt-20 pb-20">
@@ -101,7 +117,7 @@ function App() {
                   ))}
               </select>
             </div>
-            <div>
+            <div className="flex items-center gap-x-1">
               <label htmlFor="hasFriends">Has friends</label>
               <input
                 type="checkbox"
@@ -131,21 +147,21 @@ function App() {
                     <p className="text-sm">
                       {group.closed ? "Private" : "Public"}
                     </p>
-                    <p className="text-sm">
-                      {group.members_count > 0
-                        ? `${group.members_count} members`
-                        : ""}
-                    </p>
-                    <p
-                      className="text-sm cursor-pointer text-blue-500 mt-1"
-                      onClick={() => handleClick(group?.friends)}
-                    >
-                      {group?.friends
-                        ? `${group?.friends?.length} ${
-                            group?.friends?.length === 1 ? "friend" : "friends"
-                          }`
-                        : ""}
-                    </p>
+                    {group.members_count !== 0 && (
+                      <p className="text-sm">
+                        {group.members_count}{" "}
+                        {group.members_count === 1 ? "member" : "members"}
+                      </p>
+                    )}
+                    {group.friends && (
+                      <p
+                        className="text-sm cursor-pointer text-blue-500 mt-1"
+                        onClick={() => handleClick(group?.friends)}
+                      >
+                        {group.friends.length}{" "}
+                        {group.friends.length === 1 ? "friend" : "friends"}
+                      </p>
+                    )}
                   </div>
                 </div>
               </li>
