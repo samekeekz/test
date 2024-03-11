@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { GetGroupsResponse, Group, User } from "./types";
+import { GetGroupsResponse, Group as GroupType, User } from "./types";
 import { fetchGroups } from "./api";
+import { ModalWindow } from "./components/ModalWindow";
+import { useDisclosure } from "@mantine/hooks";
 
 function App() {
-  const [groups, setGroups] = useState<Group[] | undefined>();
+  const [groups, setGroups] = useState<GroupType[] | undefined>();
   const [loading, setLoading] = useState(false);
   const [currentUsers, setCurrentUsers] = useState<User[] | undefined>();
+  const [opened, { open, close }] = useDisclosure(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,35 +32,37 @@ function App() {
   }, []);
 
   const handleClick = (users: User[] | undefined) => {
+    open();
     setCurrentUsers(users);
   };
+
   return (
     <div className="grid justify-center pt-20">
-      <h1>Groups</h1>
+      <h1 className="text-3xl font-bold mb-6">Groups</h1>
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups?.map((group) => (
-            <li key={group.id}>
-              <div className="flex gap-2 items-center">
+            <li key={group.id} className="border rounded-lg p-4 shadow-md">
+              <div className="flex items-center mb-4">
                 <div
-                  className={`w-[100px] h-[100px] rounded-full`}
+                  className="w-16 h-16 rounded-full mr-4"
                   style={{ backgroundColor: `${group.avatar_color}` }}
                 ></div>
                 <div>
-                  <strong>{group.name}</strong>
-                  <p>{group.closed ? "private" : "public"}</p>
-                  <p>{group.members_count} members</p>
+                  <h2 className="text-lg font-semibold">{group.name}</h2>
+                  <p className="text-sm">
+                    {group.closed ? "Private" : "Public"}
+                  </p>
+                  <p className="text-sm">{group.members_count} members</p>
                   <p
-                    className="cursor-pointer"
+                    className="text-sm cursor-pointer text-blue-500"
                     onClick={() => handleClick(group?.friends)}
                   >
                     {group?.friends
-                      ? `${
-                          group?.friends?.length === 1
-                            ? `${group?.friends?.length} friend`
-                            : `${group?.friends?.length} friends`
+                      ? `${group?.friends?.length} ${
+                          group?.friends?.length === 1 ? "friend" : "friends"
                         }`
                       : ""}
                   </p>
@@ -67,7 +72,7 @@ function App() {
           ))}
         </ul>
       )}
-      {/* <ModalWindow users={currentUsers} /> */}
+      <ModalWindow users={currentUsers} opened={opened} close={close} />
     </div>
   );
 }

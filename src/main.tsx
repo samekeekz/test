@@ -2,14 +2,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { AdaptivityProvider, ConfigProvider } from "@vkontakte/vkui";
+import "@mantine/core/styles.css";
+import { MantineProvider } from "@mantine/core";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ConfigProvider>
-      <AdaptivityProvider>
-        <App />
-      </AdaptivityProvider>
-    </ConfigProvider>
+    <MantineProvider>
+      <App />
+    </MantineProvider>
   </React.StrictMode>
 );
